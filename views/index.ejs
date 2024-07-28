@@ -1,6 +1,35 @@
+<!-- Add Files -->
 <div class="py-12">
+  <% if (user) { %>
   <form action="/file-upload" method="post" enctype="multipart/form-data" class="flex flex-col">
     <input type="file" name="file" />
     <button type="submit" class="w-24 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg my-2">Upload</button>
   </form>
+  <% } %>
 </div>
+
+<!-- File Tree Window -->
+<div class="w-full h-48 border">
+  <% renderTree(rootNode) %>
+</div>
+
+
+<!-- Recursive File Tree Function -->
+<% function renderTree(node) { %>
+<div tabindex="0" class="collapse bg-base-200">
+  <input type="checkbox" />
+  <div class="collapse-title px-2 py-1 flex">
+    <span class="text-sm <%= node.isDirectory ? "font-semibold" : "" %>">
+      <%= path.basename(node.filePath) %>
+    </span>
+    <% if (node.isDirectory) { %>
+      <i class="fas fa-chevron-down ml-auto text-xs"></i>
+    <% } %>
+  </div>
+  <div class="collapse-content text-sm pl-2">
+    <% node.childrenPaths.forEach(child => { %>
+    <%- renderTree(child) %>
+    <% }) %>
+  </div>
+</div>
+<% } %>

@@ -4,6 +4,7 @@ const passport = require('../config/passport')
 const prisma = require('../config/client')
 const multer = require('multer')
 const path = require('path');
+const fileTreeController = require('./fileTreeController')
 
 const uploadDir = path.join(__dirname, 'uploads');
 
@@ -25,10 +26,16 @@ const upload = multer({ storage: storage })
 exports.getIndex = asyncHandler(async (req, res, next) => {
     const username = req.isAuthenticated() ? req.user.username : ""
 
+    const uploadsPath = path.join(__dirname, 'uploads');
+
+    const uploadsNode = new fileTreeController.TreeNode(uploadsPath, true, __dirname, [])
+
+    await fileTreeController.getPaths(uploadsPath, uploadsNode)
+
     if (!req.isAuthenticated()) {
         res.redirect('/login')
     } else {
-        res.render('layout', { title: 'Home', user: req.user, content: 'index', username: username })
+        res.render('layout', { title: 'Home', user: req.user, content: 'index', username: username, rootNode: uploadsNode, path: path })
     }
 
 })

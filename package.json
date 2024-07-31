@@ -7,7 +7,7 @@
     "devStart": "DEBUG=nodejs-file-uploader:* nodemon ./bin/www",
     "build-css": "tailwindcss build -i ./global.css -o ./public/build/tailwind.css",
     "watch-css": "tailwindcss build -i ./global.css -o ./public/build/tailwind.css --watch",
-    "dev": "concurrently \"npm run watch-css\" \"npm run devStart\"",
+    "dev": "concurrently \"npm run watch-css\" \"npm run devStart\""
   },
   "dependencies": {
     "@prisma/client": "^5.17.0",

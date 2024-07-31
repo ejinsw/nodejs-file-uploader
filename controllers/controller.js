@@ -133,7 +133,7 @@ exports.postRegister = asyncHandler(async (req, res, next) => {
         // Create the new user
         await prisma.user.create({
             data: {
-                username: username,
+                username,
                 email: username,
                 password: hashedPassword,
                 createdAt: new Date(),
@@ -142,10 +142,16 @@ exports.postRegister = asyncHandler(async (req, res, next) => {
         });
 
         // Authenticate the user
-        passport.authenticate('local')(req, res, next);
+        await passport.authenticate('local', {
+            successRedirect: "/",
+            failureRedirect: "/register"
+        })(req, res, next);
+
     } catch (error) {
         console.error(error);
-        res.status(500).render('register', {
+        res.status(500).render('layout', {
+            title: 'Register',
+            content: 'register',
             error: 'An error occurred during registration. Please try again.',
             formData: req.body,
         });

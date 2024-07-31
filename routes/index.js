@@ -6,6 +6,8 @@ const controller = require('../controllers/controller')
 /* GET home page. */
 router.get('/', controller.getIndex);
 router.post('/file-upload', controller.postUpload);
+router.post('/create-folder', controller.postCreateFolder)
+router.get('/file-delete', controller.getDelete)
 
 router.get('/login', controller.getLogin)
 

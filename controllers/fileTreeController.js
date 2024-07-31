@@ -22,7 +22,6 @@ const getPaths = async (directoryPath, folder) => {
                 const isDirectory = fs.lstatSync(pathToFile).isDirectory();
                 let node = new TreeNode(pathToFile, isDirectory, directoryPath, []);
                 folder.childrenPaths.push(node);
-                
                 if (isDirectory) {
                     await getPaths(pathToFile, node);
                 }

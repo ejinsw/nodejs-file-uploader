@@ -6,17 +6,19 @@ const multer = require('multer')
 const path = require('path');
 const fileTreeController = require('./fileTreeController')
 
-const uploadDir = path.join(__dirname, 'uploads');
+let uploadDir = path.join(__dirname, 'root');
 
 const fs = require('fs');
 fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, uploadDir); // Store in 'uploads' directory
+        uploadDir = req.body.path;
+        console.log(uploadDir)
+        cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname)); // Use a unique filename
+        cb(null, file.originalname);
     }
 });
 
@@ -26,7 +28,7 @@ const upload = multer({ storage: storage })
 exports.getIndex = asyncHandler(async (req, res, next) => {
     const username = req.isAuthenticated() ? req.user.username : ""
 
-    const uploadsPath = path.join(__dirname, 'uploads');
+    const uploadsPath = path.join(__dirname, 'root');
 
     const uploadsNode = new fileTreeController.TreeNode(uploadsPath, true, __dirname, [])
 
@@ -39,6 +41,38 @@ exports.getIndex = asyncHandler(async (req, res, next) => {
     }
 
 })
+
+exports.postCreateFolder = asyncHandler(async (req, res, next) => {
+    const directory = req.body.path;
+    const folderName = req.body.filename;
+    const newFolderPath = path.join(directory, folderName);
+
+    // Create the new folder
+    fs.mkdir(newFolderPath, { recursive: true }, (err) => {
+        if (err) {
+            console.error('Error creating folder:', err);
+            return res.status(500).json({ success: false, message: 'Error creating folder' });
+        }
+    });
+
+    res.redirect('/')
+});
+
+exports.getDelete = asyncHandler(async (req, res, next) => {
+    const { path: filePath, isDirectory } = req.query;
+
+    try {
+        if (isDirectory === 'true') {
+            fs.rmSync(filePath, { recursive: true, force: true });
+        } else {
+            fs.unlinkSync(filePath);
+        }
+        res.redirect('/');
+    } catch (err) {
+        console.error(`Error deleting ${isDirectory ? 'folder' : 'file'}:`, err);
+        res.status(500).send('Error deleting file or folder');
+    }
+});
 
 exports.postUpload = [upload.single('file'), asyncHandler(async (req, res, next) => {
     res.redirect('/')

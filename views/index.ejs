@@ -1,30 +1,33 @@
-<!-- Add Files -->
-<div class="py-12">
-  <% if (user) { %>
-  <form action="/file-upload" method="post" enctype="multipart/form-data" class="flex flex-col">
-    <input type="file" name="file" />
-    <button type="submit" class="w-24 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg my-2">Upload</button>
-  </form>
-  <% } %>
-</div>
-
 <!-- File Tree Window -->
-<div class="w-full h-48 border">
+<div class="w-full h-full bg-white my-4 overflow-auto border p-4">
   <% renderTree(rootNode) %>
 </div>
 
 
 <!-- Recursive File Tree Function -->
 <% function renderTree(node) { %>
-<div tabindex="0" class="collapse bg-base-200">
-  <input type="checkbox" />
-  <div class="collapse-title px-2 py-1 flex">
+<div tabindex="0" class="collapse">
+  <input type="checkbox" checked="true" />
+  <div class="collapse-title px-2 py-1 flex <%= node.isDirectory ? "border-b" : "" %>">
     <span class="text-sm <%= node.isDirectory ? "font-semibold" : "" %>">
       <%= path.basename(node.filePath) %>
     </span>
-    <% if (node.isDirectory) { %>
-      <i class="fas fa-chevron-down ml-auto text-xs"></i>
-    <% } %>
+    <div class="ml-auto flex justify-center items-center gap-2 text-lg">
+      <% if (node.filePath !== rootNode.filePath) {%>
+      <button onclick="deleteFile('<%= node.filePath %>', '<%= node.isDirectory %>')">
+        <span class="iconify mdi--trash-outline"></span>
+      </button>
+      <% } %>
+      <% if (node.isDirectory) { %>
+      <button onclick="addFile('<%= node.filePath %>')">
+        <span class="iconify mdi--file-plus-outline"></span>
+      </button>
+      <button onclick="addFolder('<%= node.filePath %>')" class="z-50">
+        <span class="iconify mdi--folder-plus-outline"></span>
+      </button>
+      <span class="iconify mdi--keyboard-arrow-down text-2xl"></span>
+      <% } %>
+    </div>
   </div>
   <div class="collapse-content text-sm pl-2">
     <% node.childrenPaths.forEach(child => { %>
@@ -33,3 +36,98 @@
   </div>
 </div>
 <% } %>
+
+<script>
+  function addFolder(directory) {
+    const pathInput = document.getElementById('folderPath');
+    pathInput.value = directory;
+    folderModal.showModal()
+  }
+
+  function addFile(directory) {
+    const pathInput = document.getElementById('filePath');
+    pathInput.value = directory;
+    fileModal.showModal()
+  }
+
+  function deleteFile(filePath, isDirectory) {
+    // Set the values of the hidden inputs in the modal form
+    document.getElementById('deletePath').value = filePath;
+    document.getElementById('isDirectory').value = isDirectory;
+
+    // Show the modal for confirmation
+    deleteModal.showModal();
+  }
+
+  function confirmDelete() {
+    // Get the file path and directory flag from the hidden inputs
+    const filePath = document.getElementById('deletePath').value;
+    const isDirectory = document.getElementById('isDirectory').value;
+
+    // Construct the URL with query parameters for deletion
+    const url = `/file-delete?path=${encodeURIComponent(filePath)}&isDirectory=${isDirectory}`;
+
+    // Redirect to the deletion URL
+    window.location.href = url;
+  }
+</script>
+
+
+
+<!-- Folder Modal -->
+<dialog id="folderModal" class="modal w-fit h-fit self-center place-self-center rounded-xl px-4 py-2">
+  <div class="modal-box w-fit h-fit">
+    <div class="modal-action">
+      <form method="dialog" class="w-full flex">
+        <button class="ml-auto"><span class="iconify mdi--close"></span></button>
+      </form>
+    </div>
+    <form action="/create-folder" method="post" class="flex gap-2 mb-2">
+      <input type="hidden" name="path" id="folderPath" value="">
+      <input type="text" name="filename" placeholder="Enter name..." class="border px-2 py-1 rounded-sm" required>
+      <button type="submit" class="rounded-lg border bg-slate-100 hover:bg-slate-200 px-2 py-0">Create</button>
+    </form>
+  </div>
+</dialog>
+
+<!-- File Modal -->
+<dialog id="fileModal" class="modal w-fit h-fit self-center place-self-center rounded-xl px-4 py-2">
+  <div class="modal-box w-fit h-fit">
+    <div class="modal-action">
+      <form method="dialog" class="w-full flex">
+        <button class="ml-auto"><span class="iconify mdi--close"></span></button>
+      </form>
+    </div>
+    <form action="/file-upload" method="post" enctype="multipart/form-data" class="flex gap-2 mb-2">
+      <input type="hidden" name="path" id="filePath" value="">
+      <input type="file" name="file" class="file-input w-full h-8" required />
+      <button type="submit" class="rounded-lg border bg-slate-100 hover:bg-slate-200 px-2 py-0">Upload</button>
+    </form>
+  </div>
+</dialog>
+
+<!-- Delete Modal -->
+<dialog id="deleteModal" class="modal w-fit h-fit self-center place-self-center rounded-xl px-4 py-2">
+  <div class="modal-box w-fit h-fit">
+    <div class="modal-action">
+      <form method="dialog" class="w-full flex">
+        <button class="ml-auto"><span class="iconify mdi--close"></span></button>
+      </form>
+    </div>
+    <div class="flex flex-col gap-4 p-2">
+      <h1>Are you sure?</h1>
+      <div class="flex gap-2 mb-2">
+        <div class="modal-action">
+          <form method="dialog" class="w-full flex">
+            <button class="rounded-lg border bg-red-400 hover:bg-red-500 px-2 py-0">Cancel</button>
+          </form>
+        </div>
+        <div class="modal-action">
+          <input type="hidden" name="isDirectory" id="isDirectory" value="">
+          <input type="hidden" name="path" id="deletePath" value="">
+          <button type="button" class="rounded-lg border bg-slate-100 hover:bg-slate-200 px-2 py-0" onclick="confirmDelete()">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</dialog>

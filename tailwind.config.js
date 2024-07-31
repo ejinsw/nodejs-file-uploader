@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+const { addIconSelectors } = require('@iconify/tailwind');
+
+
 module.exports = {
   content: [
     './views/**/*.{html,js,ejs}'
@@ -6,7 +9,10 @@ module.exports = {
   theme: {
     extend: {},
   },
-  plugins: [require('daisyui')],
+  plugins: [
+    require('daisyui'),
+    addIconSelectors(['mdi', 'mdi-light']),
+  ],
   // daisyUI config (optional - here are the default values)
   daisyui: {
     themes: false, // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]

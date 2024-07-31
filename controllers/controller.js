@@ -79,8 +79,12 @@ exports.postUpload = [upload.single('file'), asyncHandler(async (req, res, next)
 })]
 
 exports.getLogin = asyncHandler(async (req, res, next) => {
-    res.render('layout', { title: 'Login', user: req.user, content: 'login', error: req.flash('error'), formData: { username: req.flash('username'), password: "" } })
-    req.session.messages = [];
+    if (req.isAuthenticated()) {
+        res.redirect('/')
+    } else {
+        res.render('layout', { title: 'Login', user: req.user, content: 'login', error: req.flash('error'), formData: { username: req.flash('username'), password: "" } })
+        req.session.messages = [];
+    }
 })
 
 exports.postLogin = asyncHandler(async (req, res, next) => {
@@ -105,7 +109,11 @@ exports.postLogin = asyncHandler(async (req, res, next) => {
 })
 
 exports.getRegister = asyncHandler(async (req, res, next) => {
-    res.render('layout', { title: 'Register', user: req.user, content: 'register', error: false, formData: { username: "", password: "" } })
+    if (req.isAuthenticated()) {
+        res.redirect('/')
+    } else {
+        res.render('layout', { title: 'Register', user: req.user, content: 'register', error: false, formData: { username: "", password: "" } })
+    }
 })
 
 exports.postRegister = asyncHandler(async (req, res, next) => {
@@ -120,7 +128,6 @@ exports.postRegister = asyncHandler(async (req, res, next) => {
         if (existingUser) {
             return res.status(400).render('layout', {
                 title: 'Register',
-                user: req.user,
                 content: 'register',
                 error: 'Username already exists. Please choose another one.',
                 formData: req.body,
